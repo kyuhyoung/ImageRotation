@@ -4,6 +4,7 @@ Fast Image Rotation algorithms
 Playground for studing and implementing fast image rotation algoritms (with reasonable complexity).
 The code here based on many refrences.
 
+
 # References (and Thanks to!)
 
 * "Fast Bitmap Rotation and Scaling" By Steven Mortimer, Dr Dobbs' Journal, July 01, 2001"<br/>
