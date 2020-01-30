@@ -17,10 +17,11 @@ static // Foreward declaraion of faster func when srcW & srcH is power of 2
 void RotateWrapFillFastSrcSizeExp2(
     WDIBPIXEL *pDstBase, int dstW, int dstH, int dstDelta,
     WDIBPIXEL *pSrcBase, int srcW, int srcH, int srcDelta,
+    int n_channel,
     float fDstCX, float fDstCY,
     float fSrcCX, float fSrcCY,
     float fAngle, float fScale,
-    int n_sp);
+    bool is_mosaicking, int n_sp);
 
 /// <summary>
 /// Rotates source image and writes it to the destination, filling all the target.
@@ -37,21 +38,23 @@ void RotateWrapFill(
     bool is_mosaicking, int n_sp)
 {
     cout_indented(n_sp, "RotateWrapFill");
-    if (IsExp2(srcW) && IsExp2(srcH))
+    
+    if (1 == n_channel && IsExp2(srcW) && IsExp2(srcH))
     {
         cout_indented(n_sp + 1, "scrW : " + to_string(srcW));
         RotateWrapFillFastSrcSizeExp2
         (
             pDstBase, dstW,dstH,dstDelta,
             pSrcBase,srcW, srcH, srcDelta,
+            n_channel,
             fDstCX, fDstCY,
             fSrcCX, fSrcCY,
             fAngle, fScale,
-            n_sp + 1
+            is_mosaicking, n_sp + 1
         );
         return;
     }
-
+    
     cout_indented(n_sp + 1, "srcDelta : " + to_string(srcDelta));
     cout_indented(n_sp + 1, "dstDelta : " + to_string(dstDelta));   //exit(0);
     if (dstW <= 0) { return; }
@@ -177,10 +180,13 @@ void RotateWrapFillFastSrcSizeExp2(
     if (dstW <= 0) { return; }
     if (dstH <= 0) { return; }
 
+    //int srcDelta_ori = srcDelta;
     srcDelta /= sizeof(WDIBPIXEL);
     dstDelta /= sizeof(WDIBPIXEL);
+    //cout_indented(n_sp + 1, "srcDelta_ori : " + to_string(srcDelta_ori));
     cout_indented(n_sp + 1, "srcDelta : " + to_string(srcDelta));
-    cout_indented(n_sp + 1, "dstDelta : " + to_string(dstDelta));
+    cout_indented(n_sp + 1, "dstDelta : " + to_string(dstDelta));   
+    //exit(0);
  
     float duCol = (float)sin(-fAngle) * (1.0f / fScale);
     float dvCol = (float)cos(-fAngle) * (1.0f / fScale);
@@ -223,7 +229,10 @@ void RotateWrapFillFastSrcSizeExp2(
                 }
                 if (v < 0) { sy--; }
 
-                sx &= (srcDelta - 1);
+                //sx &= (srcDelta - (n_channel - 1));
+                //sx &= (srcDelta);
+                sx &= (srcDelta - n_channel);
+                //sx &= (srcW - 1);
                 sy &= (srcH - 1);
             }
             else
