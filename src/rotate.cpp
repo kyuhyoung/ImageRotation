@@ -167,9 +167,11 @@ static
 void RotateWrapFillFastSrcSizeExp2(
     WDIBPIXEL *pDstBase, int dstW, int dstH, int dstDelta,
     WDIBPIXEL *pSrcBase, int srcW, int srcH, int srcDelta,
+    int n_channel,
     float fDstCX, float fDstCY,
     float fSrcCX, float fSrcCY,
-    float fAngle, float fScale, int n_sp)
+    float fAngle, float fScale, 
+    bool is_mosaicking, int n_sp)
 {
     cout_indented(n_sp, "RotateWrapFillFastSrcSizeExp2");
     if (dstW <= 0) { return; }
@@ -210,21 +212,34 @@ void RotateWrapFillFastSrcSizeExp2(
             }
             #endif
 
-            int sx = (int)u;
+            int sx = (int)u * n_channel;
             int sy = (int)v;
 
             // Negative u/v adjustement
+            if(is_mosaicking)
+            {
+                if (u < 0) {
+                    for(int iC = 0; iC < n_channel; iC++) sx--; 
+                }
+                if (v < 0) { sy--; }
 
-            if (u < 0) { sx--; }
-            if (v < 0) { sy--; }
-
-            sx &= (srcW-1);
-            sy &= (srcH-1);
+                sx &= (srcDelta - 1);
+                sy &= (srcH - 1);
+            }
+            else
+            {
+                if(!(0 <= u && u < srcW && 0 <= v && v < srcH)) 
+                {
+                    for(int iC = 0; iC < n_channel; iC++) pDst++;
+                    u += duRow;
+                    v += dvRow;
+                    continue;
+                }                
+            }
 
             WDIBPIXEL *pSrc = pSrcBase + sx + (sy * srcDelta);
             //cout_indented(n_sp + 1, "XXX");
-
-            *pDst++ = *pSrc++;
+            for(int iC = 0; iC < n_channel; iC++) *pDst++ = *pSrc++;
             //cout_indented(n_sp + 1, "YYY");
 
             u += duRow;
