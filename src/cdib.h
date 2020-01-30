@@ -1,17 +1,28 @@
 #ifndef CDLIB_H_INCLUDED
 #define CDLIB_H_INCLUDED
 
+#include "def.h"
+
+#if 0
 #ifndef WDIBPIXEL_DEFINED
 #define WDIBPIXEL_DEFINED
 #include <stdint.h>
-#if WDIBPIXEL_BITS==16
+#if WDIBPIXEL_BITS == 8
+typedef uint8_t WDIBPIXEL;
+#elif WDIBPIXEL_BITS == 16
 typedef uint16_t WDIBPIXEL;
 //#define WDIBPIXEL_BITS (16) 
-#else
+#else       //  WDIBPIXEL_BITS==16
 typedef uint32_t WDIBPIXEL;
 #define WDIBPIXEL_BITS (32) 
-#endif
-#endif
+#endif      //  WDIBPIXEL_BITS==16
+#endif      //  WDIBPIXEL_DEFINED
+#endif      //  0
+
+#ifndef _WIN32
+
+
+#else       //  _WIN32
 
 #include <windows.h>
 
@@ -43,4 +54,6 @@ class CDIB
     UINT            GetDIBUsage()    { return(DIB_RGB_COLORS); }
 };
 
-#endif
+#endif      //  _WIN32
+
+#endif      //  CDLIB_H_INCLUDED

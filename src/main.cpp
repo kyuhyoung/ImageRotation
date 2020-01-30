@@ -6,12 +6,102 @@
 ** RIGHTS:          Stevem Mortimer
 ** Date:            18th Jan 2000
 ************************************************************** */
+#include "def.h"
+#include "rotate.h"
+#include "cdib.h"
+#include "opencv2/opencv.hpp"
+using namespace std;
+using namespace cv;
+
+double deg2rad(double degree)
+{
+    return degree * CV_PI / 180;
+    }
+
+
+void cout_indented(int n_space, const string& str)
+{
+    std::cout << std::string(n_space, ' ') << str << std::endl;
+    }
+
+
+
+string mat_type_2_str(int type, int n_sp) 
+{
+    cout_indented(n_sp, "mat_type_2_str");
+        string r;
+            uchar depth = type & CV_MAT_DEPTH_MASK;
+                uchar chans = 1 + (type >> CV_CN_SHIFT);
+                    switch ( depth ) {
+                            case CV_8U:  r = "8U"; break;
+                                    case CV_8S:  r = "8S"; break;
+                                            case CV_16U: r = "16U"; break;
+                                                    case CV_16S: r = "16S"; break;
+                                                            case CV_32S: r = "32S"; break;
+                                                                    case CV_32F: r = "32F"; break;
+                                                                            case CV_64F: r = "64F"; break;
+                                                                                    default:     r = "User"; break;
+                                                                                        }
+                                                                                            r += "C";
+                                                                                                r += (chans + '0');
+                                                                                                    return r;
+                                                                                                    }
+
+
+                                                                                                    //  Mat mat = Mat::zeros(100, 10, CV_8UC3);
+                                                                                                    //  print_mat_type(mat, 0);
+                                                                                                    //  => mat type : 8UC3    
+
+                                                                                                    void print_mat_type(const Mat& mat, int n_sp)
+                                                                                                    {
+                                                                                                        cout_indented(n_sp, "print_mat_type");
+                                                                                                            cout_indented(n_sp + 1, "mat type : " + mat_type_2_str(mat.type(), n_sp + 1));         
+                                                                                                            }
+
+#ifndef _WIN32
+
+
+int main(int argc, char **argv)
+{
+	if(argc < 6) 
+	{
+		cout << "Usage : ImageRotation [file_name] [center_x_ratio] [center_y_ratio] [angle_deg]" << endl;	exit(0);
+	}
+    cout << "sizeof(WDIBPIXEL) : " << sizeof(WDIBPIXEL) << endl;    //exit(0); 
+    float ratio_cx = atof(argv[2]), ratio_cy = atof(argv[3]), fAngleDeg = atof(argv[4]);  
+    bool is_mosaicking = 0 != atoi(argv[5]);  
+    Mat im_255_edge, im_gray = imread(argv[1], 0);
+    print_mat_type(im_gray, 0);
+    //Canny(im_gray, im_255_edge, 50, 150);
+    im_255_edge = im_gray;//, im_255_edge, 50, 150);
+    Mat im_255_edge_rotated = Mat::zeros(Size(im_255_edge.cols * 2, im_255_edge.rows * 2), im_255_edge.type()); 
+    WDIBPIXEL *pDstBase = im_255_edge_rotated.data, *pSrcBase = im_255_edge.data;
+    int srcW = im_255_edge.cols, srcH = im_255_edge.rows, srcDelta = im_255_edge.step;
+    int dstW = srcW * 2, dstH = srcH * 2, dstDelta = srcDelta * 2;
+    float fSrcCX = ratio_cx * srcW, fSrcCY = ratio_cy * srcH;
+    float fDstCX = fSrcCX * 1.2, fDstCY = fSrcCY * 1.2, fAngle = deg2rad(fAngleDeg), fScale = 1.0;
+
+    RotateWrapFill(
+        pDstBase, dstW, dstH, dstDelta,
+        pSrcBase, srcW, srcH, srcDelta,
+        fDstCX, fDstCY,
+        fSrcCX, fSrcCY,
+        fAngle, fScale, 
+        is_mosaicking, 1);
+    
+    imshow("im_255_edge", im_255_edge); imshow("im_255_edge_rotated", im_255_edge_rotated); waitKey();
+    cout_indented(0, "WWW");
+	//int libraryHD = atoi(argv[1]);
+	
+    
+    return 1;
+}
+	
+#else       // _WIN32
+
 #include <windows.h>
 #include <windowsx.h>
-#include <stdio.h>
-#include "cdib.h"
-#include "rotate.h"
- 
+
 /////////////////////////////////////////////////////////////////
 // defines
 #define _MINSCALE   0.4f
@@ -252,3 +342,4 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg,
 }
 /////////////////////////////////////////////////////////////////
 //End of File
+#endif  //_WIN32
