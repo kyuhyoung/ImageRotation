@@ -30,6 +30,7 @@ void RotateWrapFillFastSrcSizeExp2(
 void RotateWrapFill(
     WDIBPIXEL *pDstBase, int dstW, int dstH, int dstDelta,
     WDIBPIXEL *pSrcBase, int srcW, int srcH, int srcDelta,
+    int n_channel,
     float fDstCX, float fDstCY,
     float fSrcCX, float fSrcCY, 
     float fAngle, float fScale, 
@@ -51,7 +52,8 @@ void RotateWrapFill(
         return;
     }
 
-    //cout_indented(n_sp + 1, "srcDelta : " + to_string(srcDelta));
+    cout_indented(n_sp + 1, "srcDelta : " + to_string(srcDelta));
+    cout_indented(n_sp + 1, "dstDelta : " + to_string(dstDelta));   //exit(0);
     if (dstW <= 0) { return; }
     if (dstH <= 0) { return; }
 
@@ -78,7 +80,7 @@ void RotateWrapFill(
     {
 
         //cout_indented(n_sp + 1, "y : " + to_string(y));
-        float u = rowu;
+        float u = rowu;// * n_channel;
         float v = rowv;
         //cout_indented(n_sp + 1, "(u, v) : (" + to_string(u));
         WDIBPIXEL *pDst = pDstBase + (dstDelta * y);
@@ -97,10 +99,11 @@ void RotateWrapFill(
             }
             #endif
 
-            int sx = (int)u;
+            int sx = (int)u * n_channel;
+            //int sx = (int)(u * n_channel);
             int sy = (int)v;
 
-            //cout_indented(n_sp + 2, "(sx, sy) b4 : (" + to_string(sx) + ", " + to_string(sy) + ") / (" + to_string(srcW) + ", " + to_string(srcH) + ")");   // exit(0);
+            //cout_indented(n_sp + 2, "(sx, sy) b4 : (" + to_string(sx) + ", " + to_string(sy) + ") / (" + to_string(srcW) + ", " + to_string(srcH) + ")");   exit(0);
             // Negative u/v adjustement
             // We need some additional proccessing for negative u and v values
             // value in range (-0.99..;0) should be mapped to last source pixel, not zero
@@ -112,10 +115,10 @@ void RotateWrapFill(
                 if (u < 0)
                 {
                 // Negative u/v adjustement
-                    sx--;
-                    sx = -sx % srcW; sx = srcW - sx;
+                    for(int iC = 0; iC < n_channel; iC++) sx--;
+                    sx = -sx % srcDelta; sx = srcDelta - sx;
                 }
-                sx %= srcW;
+                sx %= srcDelta;
 
                 if (v < 0)
                 {
@@ -125,7 +128,6 @@ void RotateWrapFill(
                 }
 
                 sy %= srcH;
-                //cout_indented(n_sp + 2, "(sx, sy) after : (" + to_string(sx) + ", " + to_string(sy) + ") / (" + to_string(srcW) + ", " + to_string(srcH) + ")");   // exit(0);
 
 
             }
@@ -133,7 +135,7 @@ void RotateWrapFill(
             {
                 if(!(0 <= u && u < srcW && 0 <= v && v < srcH)) 
                 {
-                    pDst++;
+                    for(int iC = 0; iC < n_channel; iC++) pDst++;
                     u += duRow;
                     v += dvRow;
                     continue;
@@ -141,10 +143,11 @@ void RotateWrapFill(
 
 
             }
+            //cout_indented(n_sp + 2, "(sx, sy) after : (" + to_string(sx) + ", " + to_string(sy) + ") / (" + to_string(srcW) + ", " + to_string(srcH) + ")");   exit(0);
             WDIBPIXEL *pSrc = pSrcBase + sx + (sy * srcDelta);
-                         
-            //*pDst++ = *pSrc++;
-            *pDst++ = *pSrc;
+            for(int iC = 0; iC < n_channel; iC++)            
+                *pDst++ = *pSrc++;
+                //*pDst++ = *pSrc;
             u += duRow;
             v += dvRow;
             //if(20 == x) exit(0);

@@ -26,6 +26,7 @@ typedef uint32_t WDIBPIXEL;
 void RotateWrapFill(
     WDIBPIXEL *pDstBase, int dstW, int dstH, int dstDelta,
     WDIBPIXEL *pSrcBase, int srcW, int srcH, int srcDelta,
+    int n_channel,
     float fDstRotCenterX, float fDstRotCenterY,
     float fSrcRotCenterX, float fSrcRotCenterY, 
     float fAngle, float fScale, bool is_mosaicking, int n_sp);

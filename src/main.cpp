@@ -63,32 +63,38 @@ string mat_type_2_str(int type, int n_sp)
 
 int main(int argc, char **argv)
 {
-	if(argc < 6) 
+	if(argc < 10) 
 	{
-		cout << "Usage : ImageRotation [file_name] [center_x_ratio] [center_y_ratio] [angle_deg]" << endl;	exit(0);
+		cout << "Usage : ImageRotation [file_name] [dst_width_scale] [dst_height_scale] [src_center_x_ratio_] [src_center_y_ratio] [dst_center_x_ratio_] [dst_center_y_ratio] [angle_deg] [nonzero_for_tiling_0_for_otherwise" << endl;	exit(0);
 	}
     cout << "sizeof(WDIBPIXEL) : " << sizeof(WDIBPIXEL) << endl;    //exit(0); 
-    float ratio_cx = atof(argv[2]), ratio_cy = atof(argv[3]), fAngleDeg = atof(argv[4]);  
-    bool is_mosaicking = 0 != atoi(argv[5]);  
+    float w_scale = atof(argv[2]), h_scale = atof(argv[3]), 
+    ratio_cx_src = atof(argv[4]), ratio_cy_src = atof(argv[5]), 
+    ratio_cx_dst = atof(argv[6]), ratio_cy_dst = atof(argv[7]), 
+    fAngleDeg = atof(argv[8]);  
+    bool is_mosaicking = 0 != atoi(argv[9]);  
     Mat im_255_edge, im_gray = imread(argv[1], 0);
+    //Mat im_255_edge, im_gray = imread(argv[1]);
     print_mat_type(im_gray, 0);
     //Canny(im_gray, im_255_edge, 50, 150);
     im_255_edge = im_gray;//, im_255_edge, 50, 150);
-    Mat im_255_edge_rotated = Mat::zeros(Size(im_255_edge.cols * 2, im_255_edge.rows * 2), im_255_edge.type()); 
+    Mat im_255_edge_rotated = Mat::zeros(Size(im_255_edge.cols * w_scale, im_255_edge.rows * h_scale), im_255_edge.type()); 
     WDIBPIXEL *pDstBase = im_255_edge_rotated.data, *pSrcBase = im_255_edge.data;
-    int srcW = im_255_edge.cols, srcH = im_255_edge.rows, srcDelta = im_255_edge.step;
-    int dstW = srcW * 2, dstH = srcH * 2, dstDelta = srcDelta * 2;
-    float fSrcCX = ratio_cx * srcW, fSrcCY = ratio_cy * srcH;
-    float fDstCX = fSrcCX * 1.2, fDstCY = fSrcCY * 1.2, fAngle = deg2rad(fAngleDeg), fScale = 1.0;
+    int n_channel = im_255_edge.channels(), srcW = im_255_edge.cols, srcH = im_255_edge.rows, srcDelta = im_255_edge.step;
+    int dstW = im_255_edge_rotated.cols, dstH = im_255_edge_rotated.rows, dstDelta = im_255_edge_rotated.step;
+    float fSrcCX = ratio_cx_src * srcW, fSrcCY = ratio_cy_src * srcH;
+    float fDstCX = ratio_cx_dst * dstW, fDstCY = ratio_cy_dst * dstH, fAngle = deg2rad(fAngleDeg), fScale = 1.0;
 
     RotateWrapFill(
         pDstBase, dstW, dstH, dstDelta,
         pSrcBase, srcW, srcH, srcDelta,
+        n_channel,
         fDstCX, fDstCY,
         fSrcCX, fSrcCY,
         fAngle, fScale, 
         is_mosaicking, 1);
     
+    imwrite("im_255_edge_rotated.bmp", im_255_edge_rotated);
     imshow("im_255_edge", im_255_edge); imshow("im_255_edge_rotated", im_255_edge_rotated); waitKey();
     cout_indented(0, "WWW");
 	//int libraryHD = atoi(argv[1]);
