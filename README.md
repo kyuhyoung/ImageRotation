@@ -7,7 +7,7 @@ The code here based on many refrences.
 ## For non-visual studio use
 * After build,
 ```
-$ ImageRotation [file_name] [ratio of center x position in new image] [ratio of center y position in new image] [rotation angle in degree] [0 for tiling nonzero for doing just once] 
+$ ImageRotation [file_name] [ratio of center x position in new image] [ratio of center y position in new image] [rotation angle in degree] [0 for doing just once and nonzero for tiling] 
 ```
 * For more usage examples, see "usage.sh"
 
